@@ -1,4 +1,4 @@
-import { CommandInteraction, GuildMember, User } from "discord.js";
+import { CommandInteraction, GuildMember, User, Message, MessageReaction, CollectorFilter } from "discord.js";
 import { Discord, Slash, SlashOption } from "discordx";
 
 
@@ -8,7 +8,7 @@ export default abstract class Example {
     myCustomText = "hello"
     @Slash("connect4")
     connect4(
-      @SlashOption("user", { type: "USER" }) user: User,
+      @SlashOption("user", { type: "USER" }) user: GuildMember | User,
       interaction: CommandInteraction
     ) {
         var wEmoji = ':white_circle:';
@@ -17,9 +17,8 @@ export default abstract class Example {
         var first_turn = true;
         var emoji_map = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣'];
         var first_user = interaction.user;
-        var second_user = user;
-
-        var tiles = [[],[],[],[],[],[],[]];
+        var second_user = (user instanceof GuildMember ? user.user : user);
+        var tiles:string[][] = [[],[],[],[],[],[],[]];
         // tiles [col][row]
         // fill with white
         //console.table(tiles);
@@ -49,11 +48,12 @@ export default abstract class Example {
           //  m += '\n';
             return m;
         }
-        m =  write_message(false);
-        var board = interaction.reply(m).then(board => {
-            emoji_map.forEach(e => board.react(e));
-
-            attachCollector(board);
+        m =  write_message(false);  
+        var board = interaction.reply({content:m, fetchReply:true}).then(board => {
+            if (board instanceof Message) {
+                emoji_map.forEach(e => board.react(e));
+                attachCollector(board);
+            }
             //   1️⃣ 2️⃣ 3️⃣ 4️⃣ 5️⃣ 6️⃣ 7️⃣
             //     board.react('1️⃣')
             //     .then(() => board.react('2️⃣'))
@@ -66,12 +66,12 @@ export default abstract class Example {
             //     .catch(e => console.error(e));
         })
         
-
-        function attachCollector(board) {
-            const filter = (inputReact, user) =>  (emoji_map.includes(inputReact.emoji.name) && user.bot === false);
-            const collector = board.createReactionCollector(filter, { idle: 600000 }); // 10 minutes
+        
+        function attachCollector(board: Message) {
+            const f1:CollectorFilter<[MessageReaction,User]> = (inputReact:MessageReaction, user:User):boolean => (typeof inputReact.emoji.name === "string" && emoji_map.includes(inputReact.emoji.name) && user.bot === false);
+            const collector = board.createReactionCollector({filter:f1, idle: 600000 }); // 10 minutes
             collector.on('collect', (r, user) => {
-                r.users.remove(user).catch(e => interaction.reply(e));
+                r.users.remove(user);
                 if (!((first_turn && user == first_user) || (!first_turn && user == second_user))) {return;}               
                 
                 //console.log(r.emoji.name);
@@ -79,7 +79,7 @@ export default abstract class Example {
                 if (tiles[column].length < 6) {
                     tiles[ column].push((!first_turn ? secondEmoji:firstEmoji));
                     first_turn = !first_turn;
-                    winner = check_board(tiles);
+                    let winner:string | undefined = check_board(tiles);
                     if ( winner == secondEmoji ||  winner == firstEmoji) {
                         collector.stop();
                         m = write_message(true);
@@ -97,21 +97,21 @@ export default abstract class Example {
                 //interaction.reply(reason);
             });
         }
-        function check_board(tiles) {
+        function check_board(tiles:string[][]) {
             var count = 0;
             for (var i = 0; i < 7; i++) {
                 for (var j = 0; j < 6 ; j++) {
                     var val = tiles[i][j];
                     count++;
-                    function check_dir(a, b) {
+                    function check_dir(a:number, b:number) {
                         if (val == undefined) {return false};
                         var prev = val;
-                        
+                        var  curr:string;
                         for (var c = 0 ; c < 4; c++) {
                             if(i + c * a >= 7 || j + c * b >= 6) {
                                 return false;
                             }
-                            curr =  tiles[i + c * a][j + c * b];
+                            curr = tiles[i + c * a][j + c * b];
                             if (prev != curr) {
                                 return false;
                             }
@@ -127,7 +127,6 @@ export default abstract class Example {
                     
                 }
             }
-            //console.log(count);
         }
         
     }

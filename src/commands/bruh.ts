@@ -11,6 +11,6 @@ export default abstract class Example {
       @SlashOption("user", { type: "USER" }) user: GuildMember | User,
       interaction: CommandInteraction
     ) {
-      interaction.reply(`${user}`);
+      interaction.reply({content:`${user}`});
     }
 }
