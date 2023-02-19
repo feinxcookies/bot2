@@ -3,6 +3,9 @@
   "type": "module",
   "version": "1.0.0",
   "description": "a discord bot",
+  "engines": {
+    "node": "18.x"
+  },
   "main": "",
   "dependencies": {
     "@types/request": "^2.48.8",
