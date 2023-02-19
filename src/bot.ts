@@ -9,7 +9,7 @@ async function start() {
     const client = new Client({
         botId: "test",
         intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildMessageReactions],
-        botGuilds: process.GUILD;
+        botGuilds: [`${process.env.GUILD}`]
     });
         client.once("ready", async () => {
         await client.initApplicationCommands();
