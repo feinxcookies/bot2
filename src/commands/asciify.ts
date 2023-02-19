@@ -1,16 +1,16 @@
-import { CommandInteraction, GuildMember, User } from "discord.js";
+import { ApplicationCommandOptionType, CommandInteraction, GuildMember, User } from "discord.js";
 import { Discord, Slash, SlashOption } from "discordx";
-import Jimp from "jimp";
+import sharp from "sharp";
 
 
 @Discord()
 export default abstract class Example {
     myCustomText = "hello"
-    @Slash("asciify")
-    asciify(
-      @SlashOption("url", { type: "STRING" }) url: string,
-      @SlashOption("width", {type:"INTEGER"}) w: number,
-      @SlashOption("height", {type:"INTEGER"}) h: number,
+    @Slash({name:"asciify", "description":"convert an image to greyscale ascii"})
+    async asciify(
+      @SlashOption({name:"url", description:"url for the image", type: ApplicationCommandOptionType.String, required:true}) url: string,
+      @SlashOption({name:"width", description:"width of the image in characters. Recommended < 50", type: ApplicationCommandOptionType.Number, maxValue:50}) w: number = 50,
+      @SlashOption({name:"height", description:"height of the image in characters. Recommended < 35", type: ApplicationCommandOptionType.Number, maxValue:48}) h: number = 35,
       interaction: CommandInteraction
     ) {
         var gscale = ' ░▒▓';
@@ -20,16 +20,19 @@ export default abstract class Example {
         
         const garray = gscale.split("");
         var txt = new Array<string>();
-        Jimp.read(url).then( (img) => {
-            img.resize(w,h).quality(60).greyscale();
-            for (var i = 0; i < w*h; i++) {
-                txt[i] = garray[Math.floor(1.0 * img.bitmap.data[i*4] / 256 * garray.length)];
+
+        const response = await fetch(url);
+        const buf = await response.arrayBuffer();
+        const img = await sharp(new Uint8Array(buf)).resize(w,h, {fit:sharp.fit.fill}).greyscale().raw().toBuffer();
+        console.log(img);
+            for (var i = 0; i < img.length; i++) {
+                txt[i] = garray[Math.floor(1.0 * img[i] / 256 * garray.length)];
             }
-            var m = '```'; 
+            var m:string = '```';
             var size = 0;
             for (var y = 0; y < h; y++) {
                 var line = '';
-                if (size + w >= 2000) {
+                if (size + w+1 >= 2000) {
                     m += '```';
                     interaction.reply(m);
                     m = '```'; 
@@ -38,13 +41,12 @@ export default abstract class Example {
                 for (var x = 0; x < w; x++) {
                     line += txt[y*w + x];
                 }
-                size += w;
+                size += w+1;
                 line += "\n";
                 m+= line;
             }
             m+= '```'; 
             interaction.reply(m);
-        });
 
       
     }

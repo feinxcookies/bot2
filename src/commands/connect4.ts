@@ -1,4 +1,4 @@
-import { CommandInteraction, GuildMember, User, Message, MessageReaction, CollectorFilter } from "discord.js";
+import { CommandInteraction, GuildMember, User, Message, MessageReaction, CollectorFilter, ApplicationCommandOptionType } from "discord.js";
 import { Discord, Slash, SlashOption } from "discordx";
 
 
@@ -6,9 +6,9 @@ import { Discord, Slash, SlashOption } from "discordx";
 @Discord()
 export default abstract class Example {
     myCustomText = "hello"
-    @Slash("connect4")
+    @Slash({name:"connect4", description:"play connect four!"})
     connect4(
-      @SlashOption("user", { type: "USER" }) user: GuildMember | User,
+    @SlashOption({name:"user", description:"who you want to play with", type: ApplicationCommandOptionType.User}) user: GuildMember | User,
       interaction: CommandInteraction
     ) {
         var wEmoji = ':white_circle:';

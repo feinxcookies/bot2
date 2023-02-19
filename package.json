@@ -5,20 +5,24 @@
   "description": "a discord bot",
   "main": "",
   "dependencies": {
-    "discordx": "^9.7.3",
+    "@types/request": "^2.48.8",
+    "@types/sharp": "^0.31.1",
+    "discord.js": "^14.7.1",
+    "discordx": "^11.5.2",
     "dotenv": "^8.6.0",
     "gifwrap": "^0.10.1",
     "google-spreadsheet": "^3.2.0",
     "googleapis": "^82.0.0",
-    "jimp": "^0.16.1",
-    "reflect-metadata": "^0.1.13"
+    "jimp": "^0.16.13",
+    "reflect-metadata": "^0.1.13",
+    "request": "^2.88.2",
+    "sharp": "^0.31.3"
   },
   "devDependencies": {
     "@discordjs/rest": "^0.4.1",
     "@types/google-spreadsheet": "^3.3.0",
     "@types/node": "^17.0.45",
     "discord-api-types": "^0.33.0",
-    "discord.js": "^13.8.1",
     "typescript": "^4.7.4"
   },
   "scripts": {
