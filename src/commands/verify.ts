@@ -16,9 +16,10 @@ var variablesSheet:GoogleSpreadsheetWorksheet;
 
 var channelID_loc = [0,1];
 var messageID_loc = [0,2];
+var welcomeChannelID_loc = [0,3];
 var channelID:string;
 var messageID:string;
-var messageExists:boolean=false;
+var welcomeChannelID:string;
 
 const verifyMessage = 
 `[Server Verification]
@@ -51,7 +52,7 @@ const modal = new ModalBuilder()
         )
     ])
 
-import { CommandInteraction, Emoji, GuildEmoji, GuildMember, User, ActionRowBuilder, ButtonBuilder, ButtonStyle, Events, ComponentType, Channel, Message, Interaction, ModalBuilder, TextInputBuilder, TextInputStyle, InteractionResponse, IntegrationApplication} from "discord.js";
+import { CommandInteraction,GuildBasedChannel, Emoji, GuildEmoji, GuildMember, User, ActionRowBuilder, ButtonBuilder, ButtonStyle, Events, ComponentType, Channel, Message, Interaction, ModalBuilder, TextInputBuilder, TextInputStyle, InteractionResponse, IntegrationApplication, TextBasedChannel, ApplicationCommandOptionType} from "discord.js";
 import { ArgsOf, Discord, On, Slash, SlashOption, Client } from "discordx";
 
 @Discord()
@@ -72,6 +73,7 @@ export default abstract class Example {
         // get ID's of button message and check if message exists
         channelID = variablesSheet.getCell(channelID_loc[0], channelID_loc[1]).value?.toString();
         messageID = variablesSheet.getCell(messageID_loc[0], messageID_loc[1]).value?.toString();
+        welcomeChannelID = variablesSheet.getCell(welcomeChannelID_loc[0], welcomeChannelID_loc[1]).value?.toString();
         if (typeof channelID !== "string" || typeof messageID !== "string") return;
         var channel:Channel|null;
         try {
@@ -94,6 +96,19 @@ export default abstract class Example {
         interaction:CommandInteraction,
     ) {
          await create_verify_message(interaction,variablesSheet);
+    }
+    @Slash({ name: "set_welcome_channel", description:"sets the welcome channel"})
+    async set_channel(
+        interaction:CommandInteraction,
+        @SlashOption({name:"channel", description:"channel for the welcome message", type: ApplicationCommandOptionType.Channel}) channel: TextBasedChannel,
+    ) {
+        if (channel != null) {
+        variablesSheet.getCell(welcomeChannelID_loc[0], welcomeChannelID_loc[1]).value = channel.id;
+        welcomeChannelID = channel.id;
+        interaction.reply({content:`successfully set welcome message channel to: ${welcomeChannelID}`});
+        } else {
+            interaction.reply({content:`welcome message channel is currently: ${welcomeChannelID}`});
+        }
     }
 }
 
@@ -125,10 +140,14 @@ function create_modal_collector(client:Client) {
                         } catch (e) {console.log(e)}
 
                         interaction.reply({content:`verification successful <@${interaction.user.id}>`,ephemeral:true})
-                        return;
+                        var channel = await interaction.guild?.channels.fetch(welcomeChannelID);
+                        if (channel?.isTextBased()) {    
+                            channel.send(`Welcome <@${interaction.user.id}> feel free to leave an introduction in <#803848921804701718>`)
+                        }
+
                     }
                 }
-                await interaction.reply({ content: 'something went wrong. dm `@feinxcookies` or an exec for help', ephemeral:true});
+                await interaction.reply({ content: 'something went wrong. try again later', ephemeral:true});
             } else {
                 await interaction.reply({ content: 'incorrect code.', ephemeral:true});
             }
