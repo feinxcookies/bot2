@@ -52,7 +52,7 @@ const modal = new ModalBuilder()
         )
     ])
 
-import { CommandInteraction,GuildBasedChannel, Emoji, GuildEmoji, GuildMember, User, ActionRowBuilder, ButtonBuilder, ButtonStyle, Events, ComponentType, Channel, Message, Interaction, ModalBuilder, TextInputBuilder, TextInputStyle, InteractionResponse, IntegrationApplication, TextBasedChannel, ApplicationCommandOptionType} from "discord.js";
+import { CommandInteraction,GuildBasedChannel, Emoji, GuildEmoji, GuildMember, User, ActionRowBuilder, ButtonBuilder, ButtonStyle, Events, ComponentType, Channel, Message, Interaction, ModalBuilder, TextInputBuilder, TextInputStyle, InteractionResponse, IntegrationApplication, TextBasedChannel, ApplicationCommandOptionType, ChannelType} from "discord.js";
 import { ArgsOf, Discord, On, Slash, SlashOption, Client } from "discordx";
 
 @Discord()
@@ -99,11 +99,12 @@ export default abstract class Example {
     }
     @Slash({ name: "set_welcome_channel", description:"sets the welcome channel"})
     async set_channel(
-        interaction:CommandInteraction,
         @SlashOption({name:"channel", description:"channel for the welcome message", type: ApplicationCommandOptionType.Channel}) channel: TextBasedChannel,
+        interaction:CommandInteraction,
     ) {
         if (channel != null) {
         variablesSheet.getCell(welcomeChannelID_loc[0], welcomeChannelID_loc[1]).value = channel.id;
+        await variablesSheet.saveUpdatedCells();
         welcomeChannelID = channel.id;
         interaction.reply({content:`successfully set welcome message channel to: ${welcomeChannelID}`});
         } else {
@@ -138,13 +139,15 @@ function create_modal_collector(client:Client) {
                         try {
                         interaction.guild?.members.resolve(interaction.user)?.roles.add(verifiedRoleId);
                         } catch (e) {console.log(e)}
-
-                        interaction.reply({content:`verification successful <@${interaction.user.id}>`,ephemeral:true})
+                        console.log(welcomeChannelID);
                         var channel = await interaction.guild?.channels.fetch(welcomeChannelID);
-                        if (channel?.isTextBased()) {    
+                        interaction.reply({content:`verification successful <@${interaction.user.id}>`,ephemeral:true})
+                        
+                        if (channel != null && channel.type == ChannelType.GuildText) {
+
                             channel.send(`Welcome <@${interaction.user.id}> feel free to leave an introduction in <#803848921804701718>`)
                         }
-
+                        return;
                     }
                 }
                 await interaction.reply({ content: 'something went wrong. try again later', ephemeral:true});
