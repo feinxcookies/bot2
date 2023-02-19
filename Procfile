@@ -1,1 +1,1 @@
-worker: node bot.js
+worker: tsc && node ./dist/bot.js
