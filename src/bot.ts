@@ -9,8 +9,7 @@ async function start() {
     const client = new Client({
         botId: "test",
         intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildMessageReactions],
-        //botGuilds: process.env.DEV ? ["483615159068131339"] : ["703924979929972746"],
-        botGuilds: process.env.DEV ==="true" ?  ["486125640458960906"] : ["483615159068131339"],
+        botGuilds: process.GUILD;
     });
         client.once("ready", async () => {
         await client.initApplicationCommands();
