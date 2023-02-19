@@ -8,7 +8,7 @@ dotenv.config()
 const seed = process.env.SEED;
 const sheetDiscordColumn = 2;
 const sheetVerifiedColumn = 8;
-const verifiedRoleId = process.env.DEV === "true" ? "552784361104343040":"932585726535684098";
+const verifiedRoleId = process.env.DEV === "true" ? "932585726535684098":"552784361104343040";
 var doc:GoogleSpreadsheet;
 var verifiedSheet:GoogleSpreadsheetWorksheet;
 var variablesSheet:GoogleSpreadsheetWorksheet;
