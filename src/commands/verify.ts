@@ -73,7 +73,12 @@ export default abstract class Example {
         channelID = variablesSheet.getCell(channelID_loc[0], channelID_loc[1]).value?.toString();
         messageID = variablesSheet.getCell(messageID_loc[0], messageID_loc[1]).value?.toString();
         if (typeof channelID !== "string" || typeof messageID !== "string") return;
-        const channel:Channel|null = await client.channels.fetch(channelID);
+        var channel:Channel|null;
+        try {
+            channel = await client.channels.fetch(channelID);
+        } catch (e) {
+            return;
+        }
         if (channel!=null && channel.isTextBased()) {
             channel.messages.fetch(messageID).then(message => {
                 attach_collector(message);
