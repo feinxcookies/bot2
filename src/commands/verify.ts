@@ -128,6 +128,7 @@ function create_modal_collector(client:Client) {
             if (code.toString()==getPad(userTag + seed, 6)) {
                 // add to database
                 // scan discord names for a match
+                await verifiedSheet.loadCells({startRowIndex: 0, endRowIndex: verifiedSheet.rowCount, startColumnIndex:0, endColumnIndex: verifiedSheet.columnCount});
                 for (var i = 1; i < verifiedSheet.rowCount; i++) {
                     let val = verifiedSheet.getCell(i,sheetDiscordColumn).value;
                     
