@@ -10,7 +10,7 @@
   "dependencies": {
     "@types/request": "^2.48.8",
     "@types/sharp": "^0.31.1",
-    "discord.js": "^14.7.1",
+    "discord.js": "^14.8.0",
     "discordx": "^11.5.2",
     "dotenv": "^8.6.0",
     "gifwrap": "^0.10.1",

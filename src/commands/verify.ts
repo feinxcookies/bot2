@@ -14,9 +14,9 @@ var verifiedSheet:GoogleSpreadsheetWorksheet;
 var variablesSheet:GoogleSpreadsheetWorksheet;
 
 
-var channelID_loc = [0,1];
-var messageID_loc = [0,2];
-var welcomeChannelID_loc = [0,3];
+var channelID_loc = [1,1];
+var messageID_loc = [2,1];
+var welcomeChannelID_loc = [3,1];
 var channelID:string;
 var messageID:string;
 var welcomeChannelID:string;
@@ -69,7 +69,7 @@ export default abstract class Example {
             variablesSheet = doc.sheetsByIndex[1];
             await verifiedSheet.loadCells({startRowIndex: 0, endRowIndex: verifiedSheet.rowCount, startColumnIndex:0, endColumnIndex: verifiedSheet.columnCount});
             await variablesSheet.loadCells({startRowIndex: 0, endRowIndex: variablesSheet.rowCount, startColumnIndex:0, endColumnIndex: variablesSheet.columnCount});
-            console.log("opened sheet: " + doc.title);
+            //console.log("opened sheet: " + doc.title);
         // get ID's of button message and check if message exists
         channelID = variablesSheet.getCell(channelID_loc[0], channelID_loc[1]).value?.toString();
         messageID = variablesSheet.getCell(messageID_loc[0], messageID_loc[1]).value?.toString();
@@ -84,7 +84,7 @@ export default abstract class Example {
         if (channel!=null && channel.isTextBased()) {
             channel.messages.fetch(messageID).then(message => {
                 attach_collector(message);
-                console.log(`message exists with url: ${message.url}`);
+                //console.log(`message exists with url: ${message.url}`);
             }).catch(e=>console.log(e))
         }
         create_modal_collector(client);
