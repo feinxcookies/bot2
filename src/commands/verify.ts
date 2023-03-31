@@ -14,9 +14,9 @@ var verifiedSheet:GoogleSpreadsheetWorksheet;
 var variablesSheet:GoogleSpreadsheetWorksheet;
 
 
-var channelID_loc = [1,1];
-var messageID_loc = [2,1];
-var welcomeChannelID_loc = [3,1];
+var channelID_loc = [0,1];
+var messageID_loc = [1,1];
+var welcomeChannelID_loc = [2,1];
 var channelID:string;
 var messageID:string;
 var welcomeChannelID:string;
@@ -79,12 +79,13 @@ export default abstract class Example {
         try {
             channel = await client.channels.fetch(channelID);
         } catch (e) {
+            console.log(e);
             return;
         }
         if (channel!=null && channel.isTextBased()) {
             channel.messages.fetch(messageID).then(message => {
                 attach_collector(message);
-                //console.log(`message exists with url: ${message.url}`);
+                console.log(`message exists with url: ${message.url}`);
             }).catch(e=>console.log(e))
         }
         create_modal_collector(client);
