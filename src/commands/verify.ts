@@ -125,7 +125,8 @@ function create_modal_collector(client:Client) {
         if (!interaction.isModalSubmit()) return;
         if (interaction.customId=== "modal") {
             const code = interaction.fields.getTextInputValue("code");
-            const userTag = interaction.user.tag.toLowerCase();
+            var userName = interaction.user.username;
+            var userTag = userName.substring(0,userName.indexOf('#'));
             if (code.toString()==getPad(userTag + seed, 6)) {
                 // add to database
                 // scan discord names for a match
