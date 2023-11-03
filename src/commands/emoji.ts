@@ -6,13 +6,13 @@ import { Discord, Slash, SlashOption } from "discordx";
 
 export default abstract class Example {
     @Slash({name:"emoji", description:"prints out all emoji"})
-    emoji(interaction: CommandInteraction){
+    async emoji(interaction: CommandInteraction){
         if (interaction.guild==null) {
             interaction.reply("use the command in a server!")
             return
         }
         const e = interaction.guild.emojis;
-        interaction.reply(`There are **${e.cache.size}** emoji in this server:\n`)
+        await interaction.reply(`There are **${e.cache.size}** emoji in this server:\n`)
         var m = ``;
         var j = 0;
         e.cache.forEach((element) => {
