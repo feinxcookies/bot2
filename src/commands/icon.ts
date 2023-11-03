@@ -11,12 +11,10 @@ export default abstract class icons {
             return;
         }
         this.jobs.show = schedule ('0 18 * * *', async () => {
-            //(await client.guilds.fetch(process.env.GUILD!)).setIcon("./src/icons/purple_logo.gif");
-            (await client.guilds.fetch(process.env.GUILD!)).setIcon("./src/icons/october_night.png");
+            (await client.guilds.fetch(process.env.GUILD!)).setIcon("./src/icons/purple_logo.gif");
         }, {timezone:"Australia/Sydney"});
         this.jobs.hide = schedule ('0 6 * * *', async () => {
-            //(await client.guilds.fetch(process.env.GUILD!)).setIcon("./src/icons/blue_logo.gif");
-            (await client.guilds.fetch(process.env.GUILD!)).setIcon("./src/icons/october_day.png");
+            (await client.guilds.fetch(process.env.GUILD!)).setIcon("./src/icons/blue_logo.gif");
         }, {timezone:"Australia/Sydney"});
     }
 }
