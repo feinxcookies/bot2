@@ -6,6 +6,7 @@ import "./commands/verify.js"
 import "./commands/asciify.js";
 import "./commands/connect4.js";
 import "./commands/icon.js";
+import "./commands/emoji.js";
 async function start() {
     const client = new Client({
         botId: "test",
