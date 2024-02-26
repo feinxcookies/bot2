@@ -2,7 +2,7 @@ import {Discord, Slash, Client, SlashOption} from "discordx";
 import { GatewayIntentBits, Partials} from "discord.js";
 import "dotenv/config"
 
-import "./commands/verify.js"
+import "./commands/tags.js"
 import "./commands/asciify.js";
 import "./commands/connect4.js";
 import "./commands/icon.js";
@@ -13,7 +13,8 @@ async function start() {
         intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildMessageReactions],
         botGuilds: [`${process.env.GUILD}`]
     });
-        client.once("ready", async () => {
+        client.once("tags_ready", async () => {
+        
         await client.initApplicationCommands();
         //await client.initApplicationPermissions();
 
@@ -22,6 +23,8 @@ async function start() {
         client.on("interactionCreate", (interaction) => {
         client.executeInteraction(interaction);
     });
+
+
     await client.login(process.env.BOT_TOKEN!);
 }
 start();
