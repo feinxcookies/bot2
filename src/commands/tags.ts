@@ -61,7 +61,7 @@ class TagManager {
             return userCell;
         }).sort((a,b)=> a.name.stringValue!.localeCompare(b.name.stringValue!));
         
-        console.log("initialized tagMgr");
+        //console.log("initialized tagMgr");
     }
     async save_data () {
         this.sheet.getCell(0,0).value = this.userCount;
@@ -112,12 +112,14 @@ class TagManager {
         return arr;
     }
     list_users_tag (tagName:string) {
+        //console.log(this.lowerTagNames)
         var tagIndex = this.lowerTagNames.findIndex((str)=>str == tagName);
-        if (tagIndex == undefined) return undefined;
+        if (tagIndex == -1) return undefined;
         var arr = new Array<{name:string, data:string, ping: boolean, id:string}>;
         this.userCells.forEach((user,i)=> {
-            const tag = user.tags[tagIndex];
-            if (tag.stringValue != null) {
+            var tag = user.tags[tagIndex];
+            //console.log(tag.stringValue)
+            if (tag.stringValue != undefined) {
                 const val = JSON.parse(tag.stringValue);
                 arr.push({name: user.name.stringValue || "", data: val[0], ping: val[1], id: user.id.stringValue || ""});
             }
@@ -160,8 +162,8 @@ var tagsAutocomplete = () => {
     return Array.from(tagMgr.tagNames, e => { return {name:e,value:e} })
 }
 @Discord()
-@SlashGroup({ name: "game", description: "game"})
-@SlashGroup({ name: "id", description: "id"})
+@SlashGroup({ name: "games", description: "games"})
+@SlashGroup({ name: "profile", description: "your profile"})
 export default abstract class Example {
     @On({event:'ready'})
     async tags_init ([event]:ArgsOf<"ready">, client:Client) {
@@ -180,19 +182,18 @@ export default abstract class Example {
         console.log("opened sheet: " + doc.title);
         const sheet = doc.sheetsByIndex[0];
         tagMgr = new TagManager(sheet);
-        console.log(tagMgr.userCount)
         client.emit('tags_ready');
     }
-    @SlashGroup("id")
+    @SlashGroup("profile")
     @Slash({name:"add", description:"add an id to your profile"})
     async add(
         @SlashOption({
             autocomplete: function (interaction:AutocompleteInteraction) {
                 interaction.respond(tagsAutocomplete())
-            },
+            }, required:true,
             name:"game", description:"the game you wish to add your id to", type: ApplicationCommandOptionType.String})tag:string,
-        @SlashOption({name:"id", description:"id to add", type: ApplicationCommandOptionType.String})id:string,
-        @SlashOption({name:"ping", description:"whether or not you would like to be pinged", type: ApplicationCommandOptionType.Boolean})ping:boolean = false,
+        @SlashOption({name:"id", description:"id to add", type: ApplicationCommandOptionType.String,required:true})id:string,
+        @SlashOption({name:"ping", description:"whether you can be pinged, default is false", type: ApplicationCommandOptionType.Boolean})ping:boolean = false,
         interaction: CommandInteraction
     ){
         //var category = args[1].toLowerCase();
@@ -211,42 +212,42 @@ export default abstract class Example {
 
 
     }
-    @SlashGroup("id")
+    @SlashGroup("profile")
     @Slash({name:"remove", description:"removes a game id from your profile"})
     async remove(
         @SlashOption({autocomplete: function (interaction:AutocompleteInteraction) {
             interaction.respond(tagsAutocomplete())
-        },name:"game", description:"which game to remove", type: ApplicationCommandOptionType.String})tag:string,
+        },name:"game", description:"which game to remove", type: ApplicationCommandOptionType.String, required:true})tag:string,
         interaction: CommandInteraction
     ){
-        tagMgr.remove_tag_user(interaction.user,tag);
-        interaction.reply("Removed tag: `" + tag + "` from user: `" + interaction.user.username);
+        tagMgr.remove_tag_user(interaction.user,tag.toLowerCase());
+        interaction.reply("Removed tag: `" + tag + "` from user: " + interaction.user.username);
     }
     // TODO REMOVE USER MAYBE?
-    @SlashGroup("game")
+    @SlashGroup("games")
     @Slash({name:"list", description:"lists the games available"})
     async list(
         //@SlashChoice(...tagMgr.tagNames)
         @SlashOption({autocomplete: function (interaction:AutocompleteInteraction) {
             interaction.respond(tagsAutocomplete().concat({name:'all', value:'all'}))
-        },name:"game", description:"if blank, view available categories", type: ApplicationCommandOptionType.String, required:false})game:string,
+        },name:"game", description:"if blank, view available categories", type: ApplicationCommandOptionType.String, required:false})gameUpper:string,
         interaction: CommandInteraction
     ){
         var m1 = '```asciidoc\n';
-        if (game == undefined || game == "all") {
+        if (gameUpper == undefined || gameUpper == "all") {
             m1 += "[Available tags]: \n";
             tagMgr.tagNames.forEach((tagStr) => {
                 m1 += tagStr + "\n";
             })
         } else {
-            var gameLower = game.toLowerCase();
-            var tagIndex = tagMgr.lowerTagNames.findIndex((str)=>str == gameLower);
+            var game = gameUpper.toLowerCase();
+            var tagIndex = tagMgr.lowerTagNames.findIndex((str)=>str == game);
             if (tagIndex == -1) {
                 interaction.reply(`game doesn't exist`);
                 return
             };
             const arr: Array<{name:string,data:string,ping:boolean,id:string}> | undefined = tagMgr.list_users_tag(game);
-            if (arr === undefined) {interaction.reply("could not find any games try adding one"); return }
+            if (arr === undefined) {interaction.reply(`could not find any id's for ${game}`); return }
             const wName = 20, wData = 20, wPing = 6;
             m1+= "[" + tagMgr.tagCells[tagIndex].value + "]\n"
             m1+= "Name".padEnd(wName) + " " + "Data".padEnd(wData)+"Ping?"+"\n";
@@ -258,7 +259,7 @@ export default abstract class Example {
         m1 += '```';
         interaction.reply(m1);
     }
-    @SlashGroup("id")
+    @SlashGroup("profile")
     @Slash({name:"list", description:"lists the ids for a single user"})
     async profile(
         @SlashOption({name:"user", description:"leave blank to get your own profile", type: ApplicationCommandOptionType.User, required:false})user:User,
@@ -285,12 +286,10 @@ export default abstract class Example {
         interaction.reply(m1);
 
     }
-    @SlashGroup("game")
+    @SlashGroup("games")
     @Slash({name:"add", description:"add a game to register tags with"})
     addCat(
-        @SlashOption({autocomplete: function (interaction:AutocompleteInteraction) {
-            interaction.respond(tagsAutocomplete())
-        },name:"game", description:"game name to add", type: ApplicationCommandOptionType.String})game:string,
+        @SlashOption({name:"game", description:"game name to add", type: ApplicationCommandOptionType.String,required:true})game:string,
         interaction: CommandInteraction
     ){
     if (!tagMgr.tagNames.includes(game)) {
@@ -301,17 +300,17 @@ export default abstract class Example {
     }
 
     }
-    @SlashGroup("game")
+    @SlashGroup("games")
     @Slash({name:"remove", description:"remove a game from the list [MOD ONLY]"})
     async remcat(
         @SlashOption({autocomplete: function (interaction:AutocompleteInteraction) {
             interaction.respond(tagsAutocomplete())
-        },name:"game", description:"game name to add", type: ApplicationCommandOptionType.String})game:string,
+        },name:"game", description:"game to remove", type: ApplicationCommandOptionType.String, required:true})game:string,
         interaction: CommandInteraction
     ){
         if (interaction.guild == null) return
         var usertest = await interaction.guild.members.fetch(interaction.user);
-        if (usertest.permissions.has(PermissionFlagsBits.Administrator)) {
+        if (!usertest.permissions.has(PermissionFlagsBits.Administrator)) {
             interaction.reply({content:"you need to be an admin to use this command", ephemeral:true})
             return
         }
@@ -322,13 +321,13 @@ export default abstract class Example {
         tagMgr.rm_tag(game);
         interaction.reply("removed game: `" + game + "`");
     }
-    @SlashGroup("game")
+    @SlashGroup("games")
     @Slash({name:"ping", description:"ping everyone for this game"})
     async ping(
         ///@SlashChoice(...tagMgr.tagNames)
         @SlashOption({autocomplete: function (interaction:AutocompleteInteraction) {
             interaction.respond(tagsAutocomplete())
-        },name:"game", description:"game to ping", type: ApplicationCommandOptionType.String})game:string,
+        },name:"game", description:"game to ping", type: ApplicationCommandOptionType.String,required:true})game:string,
         interaction: CommandInteraction
     ) {
         var gameLower = game.toLowerCase()
